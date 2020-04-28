@@ -1,0 +1,60 @@
+_meta:
+  type: "roles"
+  config_version: 2
+
+# Restrict users so they can only view visualization and dashboard on kibana
+kibana_read_only:
+  reserved: true
+
+# The security REST API access role is used to assign specific users access to change the security settings through the REST API.
+security_rest_api_access:
+  reserved: true
+ 
+# Allows users to view alerts
+alerting_view_alerts:
+  reserved: true
+  index_permissions:
+    - index_patterns:
+      - ".opendistro-alerting-alert*"
+      allowed_actions:
+        - read 
+
+# Allows users to view and acknowledge alerts
+alerting_crud_alerts:
+  reserved: true
+  index_permissions:
+    - index_patterns:
+      - ".opendistro-alerting-alert*"
+      allowed_actions:
+       - crud 
+
+# Allows users to use all alerting functionality
+alerting_full_access:
+  reserved: true
+  index_permissions:
+    - index_patterns:
+      - ".opendistro-alerting-config"
+      - ".opendistro-alerting-alert*"
+      allowed_actions:
+        - crud 
+
+# Allows filebeat to use all functionality
+beat_user:
+  reserved: false
+  cluster_permissions:
+  - "cluster_monitor"
+  - "ODS_INDICES_MANAGE_ILM"
+  - "ODS_INDICES_MANAGE_ILM"
+  - "ODS_CLUSTER_MANAGE_INDEX_TEMPLATES"
+  - "ODS_CLUSTER_MANAGE_PIPELINES"
+  - "cluster_all"
+  index_permissions:
+    - index_patterns:
+      - "*beat*"
+      allowed_actions:
+        - "manage"
+        - "indices_all"
+    - index_patterns:
+      - "*"
+      allowed_actions:
+        - "manage_aliases"

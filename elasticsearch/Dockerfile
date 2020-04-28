@@ -12,7 +12,7 @@
 ################################################################################
 
 FROM centos:7 AS builder
-RUN cd /opt && curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd -
+#RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd /usr/lib/node_modules/npm && npm update && npx browserslist@latest --update-db && cd -
 RUN for iter in {1..10}; do yum update --setopt=tsflags=nodocs -y &&     yum install --setopt=tsflags=nodocs -y gzip shadow-utils tar &&     yum clean all && exit_code=0 && break || exit_code=$? && echo "yum error: retry $iter in 10s" && sleep 10; done;     (exit $exit_code)
 
 ENV PATH /usr/share/elasticsearch/bin:$PATH
@@ -20,7 +20,7 @@ ENV PATH /usr/share/elasticsearch/bin:$PATH
 RUN groupadd -g 1000 elasticsearch &&     adduser -u 1000 -g 1000 -d /usr/share/elasticsearch elasticsearch
 
 WORKDIR /usr/share/elasticsearch
-
+RUN echo "vm.max_map_count=262144" >> /etc/sysctl.conf
 #RUN cd /opt && curl --retry 8 -L -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-linux-x86_64.tar.gz && cd -
 COPY artifacts/elasticsearch-7.6.1-linux-x86_64.tar.gz /opt
 
@@ -54,12 +54,13 @@ RUN chmod +x bin/performance-analyzer-agent-cli
 FROM centos:7
 
 ENV ELASTIC_CONTAINER true
-RUN cd /opt && curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd -
+#RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd /usr/lib/node_modules/npm && npm update && npx browserslist@latest --update-db && cd -
 RUN for iter in {1..10}; do yum update --setopt=tsflags=nodocs -y &&     yum install --setopt=tsflags=nodocs -y nc shadow-utils zip unzip &&     yum clean all && exit_code=0 && break || exit_code=$? && echo "yum error: retry $iter in 10s" && sleep 10; done;     (exit $exit_code)
 
 RUN groupadd -g 1000 elasticsearch &&     adduser -u 1000 -g 1000 -G 0 -d /usr/share/elasticsearch elasticsearch &&     chmod 0775 /usr/share/elasticsearch &&     chgrp 0 /usr/share/elasticsearch
 
 WORKDIR /usr/share/elasticsearch
+RUN echo "vm.max_map_count=262144" >> /etc/sysctl.conf
 COPY --from=builder --chown=1000:0 /usr/share/elasticsearch /usr/share/elasticsearch
 RUN ./opendistro-tar-install.sh && echo "opendistro_security.ssl.http.enabled_protocols: [\"TLSv1\",\"TLSv1.1\",\"TLSv1.2\"]" >> config/elasticsearch.yml
 # Replace OpenJDK's built-in CA certificate keystore with the one from the OS

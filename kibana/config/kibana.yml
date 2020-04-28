@@ -17,5 +17,3 @@ newsfeed.enabled: false
 telemetry.optIn: false
 telemetry.enabled: false
 xpack.security.enabled: false
-#xpack.apm.enabled: false
-#xpack.apm.ui.enabled: false

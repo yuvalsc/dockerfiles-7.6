@@ -27,6 +27,11 @@ logstash:
   backend_roles:
   - "logstash"
 
+beat_user:
+  reserved: false
+  users:
+  - "filebeat"
+
 kibana_user:
   reserved: false
   backend_roles:

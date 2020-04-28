@@ -37,6 +37,8 @@ kibanaro:
 logstash:
   hash: "$2a$12$u1ShR4l4uBS3Uv59Pa2y5.1uQuZBrZtmNfqB3iM/.jL0XoV9sghS2"
   reserved: false
+  opendistro_security_roles:
+  - "kibana_server"
   backend_roles:
   - "logstash"
   description: "Demo logstash user"
@@ -44,6 +46,8 @@ logstash:
 execbeat:
   hash: "$2y$12$kV90Eio6GOr0zFgW25FnWelGPDj4lTNRJjbrxFUQ9s.79gSU96OFa"
   reserved: false
+  opendistro_security_roles:
+  - "kibana_server"
   backend_roles:
   - "logstash"
   description: "Demo execbeat user"
@@ -51,13 +55,19 @@ execbeat:
 filebeat:
   hash: "$2y$12$u/zZUBfsRNEBMThaQr0psuuVMZyXX2sHZfydWx6eOrsZcFNHS.Kxi"
   reserved: false
+  opendistro_security_roles:
+  - "beat_user"
   backend_roles:
   - "logstash"
+  - "ingest_admin"
+  - "beats_admin"
   description: "Demo filebeat user"
 
 heartbeat:
   hash: "$2y$12$kK/5kp13MpbvnerBhiUTCe6vZ1IAmNs.Us5erWWDA3bCf8Z8Ht2Ea"
   reserved: false
+  opendistro_security_roles:
+  - "kibana_server"
   backend_roles:
   - "logstash"
   description: "Demo heartbeat user"
@@ -65,6 +75,8 @@ heartbeat:
 metricbeat:
   hash: "$2y$12$cQY.KsmXlQvCPUOp.8gT9u1z8c0lmUBCUi2VRGVuTl.d9Ft28CJje"
   reserved: false
+  opendistro_security_roles:
+  - "kibana_server"
   backend_roles:
   - "logstash"
   description: "Demo metricbeat user"
