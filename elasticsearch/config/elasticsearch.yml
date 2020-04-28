@@ -1,0 +1,7 @@
+cluster.name: "mon-gpp-docker-cluster"
+network.host: 0.0.0.0
+node.name: mon-node-1
+cluster.initial_master_nodes: mon-node-1
+xpack.security.enabled: false
+http.compression: true
+
