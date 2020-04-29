@@ -7,9 +7,10 @@
 # Extract Kibana and make various file manipulations.
 ################################################################################
 FROM centos:7 AS prep_files
+
 # Add tar and gzip
-#RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd /usr/lib/node_modules/npm && npm update && npx browserslist@latest --update-db && cd -
 RUN yum update -y && yum install -y tar gzip && yum clean all
+
 #RUN cd /opt && curl --retry 8 -s -L -O https://artifacts.elastic.co/downloads/kibana/kibana-7.6.1-linux-x86_64.tar.gz && cd -
 COPY artifacts/kibana-7.6.1-linux-x86_64.tar.gz /opt
 RUN mkdir /usr/share/kibana
@@ -37,7 +38,6 @@ FROM centos:7
 EXPOSE 5601
 
 # Add Reporting dependencies.
-#RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd /usr/lib/node_modules/npm && npm update && npx browserslist@latest --update-db && cd -
 RUN yum update -y && yum install -y fontconfig freetype shadow-utils && yum clean all
 
 # Add an init process, check the checksum to make sure it's a match
@@ -50,7 +50,6 @@ RUN chmod +x /usr/local/bin/dumb-init
 COPY --from=prep_files --chown=1000:0 /usr/share/kibana /usr/share/kibana
 WORKDIR /usr/share/kibana
 RUN ln -s /usr/share/kibana /opt/kibana
-
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/kibana/bin:$PATH
 

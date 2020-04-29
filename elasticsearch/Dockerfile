@@ -12,7 +12,7 @@
 ################################################################################
 
 FROM centos:7 AS builder
-#RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd /usr/lib/node_modules/npm && npm update && npx browserslist@latest --update-db && cd -
+
 RUN for iter in {1..10}; do yum update --setopt=tsflags=nodocs -y &&     yum install --setopt=tsflags=nodocs -y gzip shadow-utils tar &&     yum clean all && exit_code=0 && break || exit_code=$? && echo "yum error: retry $iter in 10s" && sleep 10; done;     (exit $exit_code)
 
 ENV PATH /usr/share/elasticsearch/bin:$PATH
@@ -54,7 +54,6 @@ RUN chmod +x bin/performance-analyzer-agent-cli
 FROM centos:7
 
 ENV ELASTIC_CONTAINER true
-#RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash - && yum install nodejs -y && cd /usr/lib/node_modules/npm && npm update && npx browserslist@latest --update-db && cd -
 RUN for iter in {1..10}; do yum update --setopt=tsflags=nodocs -y &&     yum install --setopt=tsflags=nodocs -y nc shadow-utils zip unzip &&     yum clean all && exit_code=0 && break || exit_code=$? && echo "yum error: retry $iter in 10s" && sleep 10; done;     (exit $exit_code)
 
 RUN groupadd -g 1000 elasticsearch &&     adduser -u 1000 -g 1000 -G 0 -d /usr/share/elasticsearch elasticsearch &&     chmod 0775 /usr/share/elasticsearch &&     chgrp 0 /usr/share/elasticsearch
