@@ -9,7 +9,7 @@
 FROM centos:7 AS prep_files
 
 # Add tar and gzip
-RUN yum update -y && yum install -y tar gzip && yum clean all
+RUN yum update -y && yum install -y tar gzip deltarpm && yum clean all
 
 #RUN cd /opt && curl --retry 8 -s -L -O https://artifacts.elastic.co/downloads/kibana/kibana-7.6.1-linux-x86_64.tar.gz && cd -
 COPY artifacts/kibana-7.6.1-linux-x86_64.tar.gz /opt
@@ -24,11 +24,14 @@ RUN chmod -R g=u /usr/share/kibana
 RUN find /usr/share/kibana -type d -exec chmod g+s {} \;
 
 COPY plugins/*.zip ./
-RUN ./bin/kibana-plugin --allow-root install file:opendistro_security_kibana_plugin-1.6.0.0.zip
-RUN ./bin/kibana-plugin --allow-root install file:opendistro-alerting-1.6.0.0.zip
-RUN ./bin/kibana-plugin --allow-root install file:opendistro_index_management_kibana-1.6.0.0.zip
+RUN ./bin/kibana-plugin --allow-root install --silent file:opendistro_security_kibana_plugin-1.6.0.0.zip
+RUN ./bin/kibana-plugin --allow-root install --silent file:opendistro-alerting-1.6.0.0.zip
+RUN ./bin/kibana-plugin --allow-root install --silent file:opendistro_index_management_kibana-1.6.0.0.zip
 RUN rm -rf *.zip
-COPY bin/opendistro-tar-install.sh .
+COPY bin/loadObject.sh bin/
+RUN mkdir -p config/savedObjects && chmod +x bin/loadObject.sh
+COPY config/savedObjects/*.ndjson config/savedObjects/
+
 
 ################################################################################
 # Build stage 1

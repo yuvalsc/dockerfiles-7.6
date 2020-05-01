@@ -13,6 +13,7 @@
 
 FROM centos:7 AS builder
 
+#RUN yum install -y deltarpm
 RUN for iter in {1..10}; do yum update --setopt=tsflags=nodocs -y &&     yum install --setopt=tsflags=nodocs -y gzip shadow-utils tar &&     yum clean all && exit_code=0 && break || exit_code=$? && echo "yum error: retry $iter in 10s" && sleep 10; done;     (exit $exit_code)
 
 ENV PATH /usr/share/elasticsearch/bin:$PATH
@@ -32,13 +33,13 @@ COPY config/elasticsearch.yml config/log4j2.properties config/
 RUN chmod 0660 config/elasticsearch.yml config/log4j2.properties
 
 COPY plugins/*.zip ./
-RUN echo y | ./bin/elasticsearch-plugin install file:opendistro_security-1.6.0.0.zip
-RUN ./bin/elasticsearch-plugin install file:opendistro-job-scheduler-1.6.0.0.zip
-RUN echo y | ./bin/elasticsearch-plugin install file:opendistro_alerting-1.6.0.0.zip
-RUN ./bin/elasticsearch-plugin install file:opendistro_sql-1.6.0.0.zip
-RUN echo y | ./bin/elasticsearch-plugin install file:opendistro_index_management-1.6.0.0.zip
-RUN echo y | ./bin/elasticsearch-plugin install file:opendistro_performance_analyzer-1.6.0.0.zip
-RUN rm -rf *.zip
+#RUN echo y | ./bin/elasticsearch-plugin install --silent ./file:opendistro_security-1.6.0.0.zip
+#RUN ./bin/elasticsearch-plugin install --silent file:opendistro-job-scheduler-1.6.0.0.zip
+#RUN echo y | ./bin/elasticsearch-plugin --silent install file:opendistro_alerting-1.6.0.0.zip
+#RUN ./bin/elasticsearch-plugin install --silent file:opendistro_sql-1.6.0.0.zip
+#RUN echo y | ./bin/elasticsearch-plugin install --silent file:opendistro_index_management-1.6.0.0.zip
+#RUN echo y | ./bin/elasticsearch-plugin install --silent file:opendistro_performance_analyzer-1.6.0.0.zip
+#RUN rm -rf *.zip
 COPY bin/opendistro-tar-install.sh .
 COPY bin/opendistro-performance-analyzer.service /usr/lib/systemd/system/opendistro-performance-analyzer.service
 COPY bin/performance-analyzer-agent-cli bin/
@@ -62,6 +63,8 @@ WORKDIR /usr/share/elasticsearch
 RUN echo "vm.max_map_count=262144" >> /etc/sysctl.conf
 COPY --from=builder --chown=1000:0 /usr/share/elasticsearch /usr/share/elasticsearch
 RUN ./opendistro-tar-install.sh && echo "opendistro_security.ssl.http.enabled_protocols: [\"TLSv1\",\"TLSv1.1\",\"TLSv1.2\"]" >> config/elasticsearch.yml
+RUN rm -f opendistro-tar-install.sh
+
 # Replace OpenJDK's built-in CA certificate keystore with the one from the OS
 # vendor. The latter is superior in several ways.
 # REF: https://github.com/elastic/elasticsearch-docker/issues/171

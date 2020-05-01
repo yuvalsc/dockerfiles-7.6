@@ -17,3 +17,4 @@ newsfeed.enabled: false
 telemetry.optIn: false
 telemetry.enabled: false
 xpack.security.enabled: false
+server.maxPayloadBytes: 10000000

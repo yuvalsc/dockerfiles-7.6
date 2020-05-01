@@ -1,0 +1,100 @@
+version: '3'
+services:
+  odfe-node1:
+    image: amazon/opendistro-for-elasticsearch:1.6.0
+    container_name: odfe-node1
+    environment:
+      - cluster.name=odfe-cluster
+      - node.name=odfe-node1
+      - discovery.seed_hosts=odfe-node1,odfe-node2
+      - cluster.initial_master_nodes=odfe-node1,odfe-node2
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - opendistro_security.ssl.http.enabled_protocols=TLSv1,TLSv1.1,TLSv1.2
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      - odfe-data1:/usr/share/elasticsearch/data
+      #- ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    networks:
+      - odfe-net
+    #deploy:
+    #  mode: replicated
+    #  replicas: 2
+    #  endpoint_mode: vip
+  odfe-node2:
+    image: amazon/opendistro-for-elasticsearch:1.6.0
+    container_name: odfe-node2
+    environment:
+      - cluster.name=odfe-cluster
+      - node.name=odfe-node2
+      - discovery.seed_hosts=odfe-node1,odfe-node2
+      - cluster.initial_master_nodes=odfe-node1,odfe-node2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - opendistro_security.ssl.http.enabled_protocols=TLSv1,TLSv1.1,TLSv1.2
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - odfe-data2:/usr/share/elasticsearch/data
+      #- ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - odfe-net
+  kibana:
+    image: amazon/opendistro-for-elasticsearch-kibana:1.6.0
+    container_name: odfe-kibana
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      #SERVER_NAME: kibana.example.org
+      ELASTICSEARCH_URL: https://odfe-node1:9200
+      ELASTICSEARCH_HOSTS: https://odfe-node1:9200
+    networks:
+      - odfe-net
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.6.2
+    container_name: es-logstash
+    ports:
+      - 5044:5044
+    expose:
+      - "9600"
+      - "5044"
+    environment:
+      #ELASTICSEARCH_HOSTS: "https://odfe-node1:9200" #"[\"https://odfe-node1:9200\",\"https://odfe-node1:9200\"]"
+      LOG_LEVEL: "info"
+      XPACK_MONITORING_ENABLED: "false"
+      ELASTICSEARCH_HOSTS: https://localhost:9200
+      xpack.monitoring.elasticsearch.hosts:
+      #elasticsearch.ssl.verificationMode: none
+      #elasticsearch.username: kibanaserver
+      #elasticsearch.password: kibanaserver
+    volumes:
+      - logstash-data1:/usr/share/logstash/data
+      - ./config/logstash/gpp-readlogs.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./config/logstash/logstash-oss.yml:/usr/share/logstash/config/logstash.yml
+    networks:
+      - odfe-net
+
+volumes:
+  odfe-data1:
+  odfe-data2:
+  logstash-data1:
+
+networks:
+  odfe-net:

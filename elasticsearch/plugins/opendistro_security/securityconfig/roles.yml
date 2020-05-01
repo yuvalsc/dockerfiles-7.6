@@ -58,3 +58,9 @@ beat_user:
       - "*"
       allowed_actions:
         - "manage_aliases"
+  tenant_permissions:
+  - tenant_patterns:
+    - "filebeat-*"
+    allowed_actions:
+    - "kibana_all_write"
+  static: false

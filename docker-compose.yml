@@ -1,0 +1,84 @@
+version: '3'
+services:
+  es-mon-node1:
+    image: yuvalsc/mon-gpp-elastic
+    container_name: es-mon-node1
+    environment:
+      - cluster.name=odfe-cluster
+      - node.name=es-mon-node1
+      - discovery.seed_hosts=es-mon-node1,es-mon-node2
+      - cluster.initial_master_nodes=es-mon-node1,es-mon-node2
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - opendistro_security.ssl.http.enabled_protocols=TLSv1,TLSv1.1,TLSv1.2
+      - opendistro_security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      - es-mon-data1:/usr/share/elasticsearch/data
+      #- ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+    networks:
+      - gpp-mon-net
+    #build:
+    #  context: .
+    #  shm_size: '2gb'
+    #deploy:
+    #  mode: replicated
+    #  replicas: 2
+    #  endpoint_mode: vip
+  es-mon-node2:
+    image: yuvalsc/mon-gpp-elastic
+    container_name: es-mon-node2
+    environment:
+      - cluster.name=odfe-cluster
+      - node.name=es-mon-node2
+      - discovery.seed_hosts=es-mon-node1,es-mon-node2
+      - cluster.initial_master_nodes=es-mon-node1,es-mon-node2
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - opendistro_security.ssl.http.enabled_protocols=TLSv1,TLSv1.1,TLSv1.2
+      - opendistro_security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - es-mon-data2:/usr/share/elasticsearch/data
+      #- ./config/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    networks:
+      - gpp-mon-net
+  kib-mon-node1:
+    image: yuvalsc/mon-gpp-kibana
+    container_name: kib-mon-node1
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      #SERVER_NAME: kibana.example.org
+      #ELASTICSEARCH_URL: https://es-mon-node1:9200
+      #ELASTICSEARCH_HOSTS: https://es-mon-node1:9200
+      - node.name=kib-mon-node1
+    volumes:
+      - kib-mon-data1:/usr/share/kibana/data
+    networks:
+      - gpp-mon-net
+
+volumes:
+  es-mon-data1:
+  es-mon-data2:
+  kib-mon-data1:
+
+networks:
+  gpp-mon-net:
