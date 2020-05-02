@@ -54,13 +54,15 @@ beat_user:
       allowed_actions:
         - "manage"
         - "indices_all"
+        - "crud"
     - index_patterns:
       - "*"
       allowed_actions:
         - "manage_aliases"
+        - "data_access"
   tenant_permissions:
   - tenant_patterns:
-    - "filebeat-*"
+    - "global_tenant"
     allowed_actions:
-    - "kibana_all_write"
+    - "kibana_all_read"
   static: false
